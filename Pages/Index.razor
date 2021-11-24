@@ -1,0 +1,59 @@
+﻿@page "/"
+@using File_Upload_in_Blazor.Services;
+@inject IFileUpload fileUpload;
+
+<div class="col-6">
+    <h1>File Upload in Blazor</h1>
+    <div class="form-group">
+        <InputFile OnChange="OnInputFileChange" multiple />
+        <button class="btn btn-sm btn-success" type="button" @onclick="UploadFiles">Upload</button>
+        <br />
+    </div>
+    <br />
+    <label>@labelText</label>
+    <br />
+</div>
+
+@code{
+    // Show results of the upload
+    private string labelText = "";
+
+    // list of selected files to upload
+    IReadOnlyList<IBrowserFile> selectedFiles;
+
+    // method automatically executed when there's a new selection in files to upload
+    // get selected files to upload
+    private void OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        selectedFiles = new List<IBrowserFile>();
+        // Get all files selected in the file picker
+        selectedFiles = e.GetMultipleFiles();
+    }
+
+    private async Task UploadFiles()
+    {
+        try
+        {
+            // check to make sure we actually have files to upload. 
+            if (selectedFiles is not null && selectedFiles.Count > 0)
+            {
+                // let's now upload one by one
+                foreach (var file in selectedFiles)
+                {
+                    // asynchronously upload the file
+                    await fileUpload.UploadFile(file);
+
+                }
+
+                // Upload has been successful, notify user.
+                labelText = $"Upload of {selectedFiles.Count} files Successful";
+            }
+        }
+        catch (Exception ex)
+        {
+            //Upload failed due to some reason, notify user.
+            labelText = $"Upload Failed due to {ex.Message}";
+        }
+
+    }
+}
